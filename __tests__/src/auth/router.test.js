@@ -20,6 +20,20 @@ let roles = {
   user: ['read'],
 };
 
+let newProduct = {
+  name: 'Hot Dog',
+  price: 3,
+  quantity: 5,
+  inStock: true,
+};
+
+let updatedProduct = {
+  name: 'Hot Dog',
+  price: 3,
+  quantity: 0,
+  inStock: false,
+};
+
 describe('Auth Router', () => {
   beforeAll(() => {
     return Promise.all(
@@ -112,6 +126,33 @@ describe('Auth Router', () => {
         .delete('/delete-stuff')
         .set('Authorization', `Bearer ${savedToken}`)
         .expect(user.role === 'admin' ? 200 : 401);
+    });
+
+    it('only allows to post to /products for roles with create capability', async () => {
+      let user = users[userType];
+
+      return await mockRequest
+        .post('/api/v1/products')
+        .set('Authorization', `Bearer ${savedToken}`)
+        .send(newProduct)
+        .expect(user.role === 'admin' || user.role === 'editor' ? 200 : 401);
+    });
+
+    it('only allows to update /products for roles with update capability', async () => {
+      let user = users[userType];
+
+      return await mockRequest
+        .post('/api/v1/products')
+        .set('Authorization', `Bearer ${savedToken}`)
+        .send(newProduct)
+        .expect(user.role === 'admin' || user.role === 'editor' ? 200 : 401)
+        .then( result => {
+          return mockRequest
+            .put(`/api/v1/products/${result.body._id}`)
+            .set('Authorization', `Bearer ${savedToken}`)
+            .send(updatedProduct)
+            .expect(user.role === 'admin' || user.role === 'editor' ? 200 : 401);
+        });
     });
 
 
