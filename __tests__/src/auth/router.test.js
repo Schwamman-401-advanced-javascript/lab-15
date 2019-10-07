@@ -155,6 +155,74 @@ describe('Auth Router', () => {
         });
     });
 
+    it('only allows to delete /products for roles with delete capability', async () => {
+      let user = users[userType];
+
+      return await mockRequest
+        .post('/api/v1/products')
+        .set('Authorization', `Bearer ${savedToken}`)
+        .send(newProduct)
+        .expect(user.role === 'admin' || user.role === 'editor' ? 200 : 401)
+        .then( result => {
+          return mockRequest
+            .delete(`/api/v1/products/${result.body._id}`)
+            .set('Authorization', `Bearer ${savedToken}`)
+            .expect(user.role === 'admin' ? 200 : 401);
+        });
+    });
+
+    let newCategory = {
+      name: 'Test Category',
+      description: 'Testing',
+    };
+
+    let updatedCategory = {
+      name: 'Test Category - Updated',
+      description: 'Testing',
+    };
+
+    it('only allows to post to /categories for roles with create capability', async () => {
+      let user = users[userType];
+
+      return await mockRequest
+        .post('/api/v1/categories')
+        .set('Authorization', `Bearer ${savedToken}`)
+        .send(newCategory)
+        .expect(user.role === 'admin' || user.role === 'editor' ? 200 : 401);
+    });
+
+    it('only allows to update /categories for roles with update capability', async () => {
+      let user = users[userType];
+
+      return await mockRequest
+        .post('/api/v1/categories')
+        .set('Authorization', `Bearer ${savedToken}`)
+        .send(newCategory)
+        .expect(user.role === 'admin' || user.role === 'editor' ? 200 : 401)
+        .then( result => {
+          return mockRequest
+            .put(`/api/v1/categories/${result.body._id}`)
+            .set('Authorization', `Bearer ${savedToken}`)
+            .send(updatedCategory)
+            .expect(user.role === 'admin' || user.role === 'editor' ? 200 : 401);
+        });
+    });
+
+    it('only allows to delete /categories for roles with delete capability', async () => {
+      let user = users[userType];
+
+      return await mockRequest
+        .post('/api/v1/categories')
+        .set('Authorization', `Bearer ${savedToken}`)
+        .send(newCategory)
+        .expect(user.role === 'admin' || user.role === 'editor' ? 200 : 401)
+        .then( result => {
+          return mockRequest
+            .delete(`/api/v1/categories/${result.body._id}`)
+            .set('Authorization', `Bearer ${savedToken}`)
+            .expect(user.role === 'admin' ? 200 : 401);
+        });
+    });
 
   });
 });
